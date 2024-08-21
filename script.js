@@ -34,7 +34,7 @@ function init() {
 
     // Load the GLB model
     const loader = new THREE.GLTFLoader();
-    loader.load('cyberpunk_robot.glb', function(gltf) {
+    loader.load('models/cyberpunk_robot.glb', function(gltf) {
         model = gltf.scene;
         model.scale.set(5, 5, 5); // Adjust the scale of the model
         model.position.set(0, 0, 0); // Position the model at the sphere's center
