@@ -34,50 +34,42 @@ function init() {
 
     // Load the GLB model
     const loader = new THREE.GLTFLoader();
-    loader.load('models/cyberpunk_robot.glb', function(gltf) {
+    loader.load('cyberpunk_robot.glb', function(gltf) {
         model = gltf.scene;
-        model.scale.set(10, 10, 10); // Adjust the scale of the model
-        model.position.set(0, 0, 0); // Set the initial position of the model
-        scene.add(model);
+        model.scale.set(5, 5, 5); // Adjust the scale of the model
+        model.position.set(0, 0, 0); // Position the model at the sphere's center
 
-        // Adjust camera position and make it look at the model
-        const box = new THREE.Box3().setFromObject(model);
-        const center = box.getCenter(new THREE.Vector3());
-        const size = box.getSize(new THREE.Vector3());
+        // Create Spheres and distribute them along the Z-axis
+        let geometry = new THREE.SphereGeometry(25, 32, 32);
+        let material = new THREE.MeshNormalMaterial({
+            transparent: true,
+            opacity: 0.9  // Adjust this value between 0 (fully transparent) and 1 (fully opaque)
+        });
 
-        // Position the camera based on the size of the model
-        const maxDim = Math.max(size.x, size.y, size.z);
-        const fov = camera.fov * (Math.PI / 180);
-        let cameraZ = Math.abs(maxDim / 2 * Math.tan(fov * 2)); // Adjust camera distance
-        cameraZ *= 1.5; // Factor to ensure the model is fully in view
+        for (let i = 0; i < 500; i++) {
+            let sphere = new THREE.Mesh(geometry, material);
+            sphere.position.x = Math.random() * 1600 - 800;
+            sphere.position.y = Math.random() * 1600 - 800;
+            sphere.position.z = Math.random() * 2000 - 1000; // Z-axis spread
+            sphere.userData.originalScale = sphere.scale.clone(); // Store original scale for animation
+            sphere.userData.velocity = new THREE.Vector3(
+                (Math.random() - 0.5) * 0.2,
+                (Math.random() - 0.5) * 0.2,
+                (Math.random() - 0.5) * 0.2
+            ); // Random velocity
 
-        camera.position.set(center.x, center.y, cameraZ);
-        camera.lookAt(center);
-    }, undefined, function(error) {
+            // Add the model to 10 random spheres
+            if (i < 10) {
+                const modelClone = model.clone();
+                sphere.add(modelClone);
+            }
+
+            scene.add(sphere);
+            spheres.push(sphere);
+        }
+    }, undefined, function (error) {
         console.error('An error occurred while loading the model:', error);
     });
-
-    // Create Spheres and distribute them along the Z-axis
-    let geometry = new THREE.SphereGeometry(25, 32, 32);
-    let material = new THREE.MeshNormalMaterial({
-        transparent: true,
-        opacity: 0.9  // Adjust this value between 0 (fully transparent) and 1 (fully opaque)
-    });
-    
-    for (let i = 0; i < 500; i++) { // Generate half as many spheres
-        let sphere = new THREE.Mesh(geometry, material);
-        sphere.position.x = Math.random() * 1600 - 800;
-        sphere.position.y = Math.random() * 1600 - 800;
-        sphere.position.z = Math.random() * 2000 - 1000; // Z-axis spread
-        sphere.userData.originalScale = sphere.scale.clone(); // Store original scale for animation
-        sphere.userData.velocity = new THREE.Vector3(
-            (Math.random() - 0.5) * 0.2, 
-            (Math.random() - 0.5) * 0.2, 
-            (Math.random() - 0.5) * 0.2
-        ); // Random velocity
-        scene.add(sphere);
-        spheres.push(sphere);
-    }
 
     // Create comets (lines between random spheres)
     for (let i = 0; i < 10; i++) { // Adjust number of comets
